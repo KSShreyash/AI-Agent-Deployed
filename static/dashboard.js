@@ -1,6 +1,9 @@
 /* dashboard.js — Employee personal dashboard */
 'use strict';
 
+// Token key — must match app.js (pa_token)
+const TOKEN_KEY = 'pa_token';
+
 // ---------------------------------------------------------------------------
 // Utilities
 // ---------------------------------------------------------------------------
@@ -25,12 +28,11 @@ function getToken() {
   const params = new URLSearchParams(window.location.search);
   const urlToken = params.get('token');
   if (urlToken) {
-    localStorage.setItem('db_token', urlToken);
-    // Clean URL without reload
+    localStorage.setItem(TOKEN_KEY, urlToken);
     window.history.replaceState({}, document.title, '/dashboard');
     return urlToken;
   }
-  return localStorage.getItem('db_token');
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 function toast(msg, type = 'info') {
@@ -46,6 +48,16 @@ function fmtDate(iso) {
   try {
     return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   } catch { return iso; }
+}
+
+function fmtTime(t) {
+  if (!t) return '';
+  try {
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
+  } catch { return t; }
 }
 
 function greeting() {
@@ -68,11 +80,14 @@ function esc(s) {
 function renderSessionCard(a, idx) {
   const isCompleted = a.status === 'completed';
   const isOverdue   = !isCompleted && a.is_expired;
-  const isActive    = !isCompleted && !isOverdue;
 
-  const iconType = isCompleted ? 'completed' : isOverdue ? 'overdue' : 'pending';
-  const statusLabel = isCompleted ? 'Completed' : isOverdue ? 'Overdue' : (a.status === 'in_progress' ? 'In Progress' : 'Pending');
-  const statusClass = isCompleted ? 'completed' : isOverdue ? 'overdue' : (a.status === 'in_progress' ? 'in_progress' : 'pending');
+  const iconType    = isCompleted ? 'completed' : isOverdue ? 'overdue' : 'pending';
+  const statusLabel = isCompleted ? 'Completed'
+                    : isOverdue   ? 'Overdue'
+                    : a.status === 'in_progress' ? 'In Progress' : 'Pending';
+  const statusClass = isCompleted ? 'completed'
+                    : isOverdue   ? 'overdue'
+                    : a.status === 'in_progress' ? 'in_progress' : 'pending';
 
   const iconSvg = isCompleted
     ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
@@ -100,9 +115,10 @@ function renderSessionCard(a, idx) {
   if (!isCompleted) {
     if (isOverdue) {
       actionBtn = `<button class="btn-start-session expired" disabled>
-        ⏰ Deadline passed — contact your manager
+        Deadline passed — contact your manager
       </button>`;
     } else {
+      // Pass token so app.js picks it up and routes directly to consent (not login)
       actionBtn = `<a href="/app?token=${getToken()}" class="btn-start-session">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/>
@@ -113,12 +129,17 @@ function renderSessionCard(a, idx) {
   }
 
   const notesHtml = a.notes
-    ? `<div class="session-notes">💬 ${esc(a.notes)}</div>`
+    ? `<div class="session-notes">${esc(a.notes)}</div>`
     : '';
 
-  const completedDate = isCompleted && a.report_id
-    ? `<div class="session-date">Completed · Report #${esc(a.report_id)}</div>`
-    : `<div class="session-date">Due: ${fmtDate(a.due_date)}</div>`;
+  // Show session date + time if available
+  let dateTimeStr = '';
+  if (isCompleted && a.report_id) {
+    dateTimeStr = `<div class="session-date">Completed · Report #${esc(a.report_id)}</div>`;
+  } else {
+    const timeStr = a.session_time ? ` at ${fmtTime(a.session_time)}` : '';
+    dateTimeStr = `<div class="session-date">Scheduled: ${fmtDate(a.due_date)}${timeStr}</div>`;
+  }
 
   return `
     <div class="session-card" style="animation-delay:${idx * 0.08}s">
@@ -129,7 +150,7 @@ function renderSessionCard(a, idx) {
             <div class="session-title">Process Improvement Session</div>
             <span class="status-badge ${statusClass}">${statusLabel}</span>
           </div>
-          ${completedDate}
+          ${dateTimeStr}
           ${a.created_by ? `<div class="session-date" style="font-size:11px;margin-top:2px">Assigned by: ${esc(a.created_by)}</div>` : ''}
         </div>
       </div>
@@ -166,15 +187,13 @@ async function init() {
     renderDashboard(data);
   } catch (e) {
     if (e.message && (e.message.includes('401') || e.message.includes('Authentication'))) {
-      localStorage.removeItem('db_token');
+      localStorage.removeItem(TOKEN_KEY);
       window.location.href = '/';
       return;
     }
     toast('Could not load dashboard: ' + e.message, 'error');
+    document.getElementById('loading-overlay').style.display = 'none';
   }
-
-  // Hide loading overlay
-  document.getElementById('loading-overlay').style.display = 'none';
 }
 
 function renderDashboard(data) {
@@ -195,9 +214,9 @@ function renderDashboard(data) {
     document.getElementById('db-avatar-fb').style.display = 'none';
   }
 
-  // Greeting
+  // Greeting — no emojis
   const greetTitle = document.getElementById('db-greeting-title');
-  greetTitle.textContent = `${greeting()}, ${name.split(' ')[0]} 👋`;
+  greetTitle.textContent = `${greeting()}, ${name.split(' ')[0]}`;
 
   // Stats
   const overdue = upcoming.filter(a => a.is_expired).length;
@@ -218,7 +237,7 @@ function renderDashboard(data) {
   if (upcoming.length > 0) {
     upcomingList.innerHTML = upcoming.map((a, i) => renderSessionCard(a, i)).join('');
   } else {
-    upcomingList.innerHTML = emptyCard('🎉 No pending sessions — you\'re all caught up!');
+    upcomingList.innerHTML = emptyCard('No pending sessions — you\'re all caught up.');
   }
 
   // Render completed
@@ -234,7 +253,7 @@ function renderDashboard(data) {
 }
 
 function signOut() {
-  localStorage.removeItem('db_token');
+  localStorage.removeItem(TOKEN_KEY);
   window.location.href = '/';
 }
 

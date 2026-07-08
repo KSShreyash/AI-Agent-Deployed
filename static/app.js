@@ -927,14 +927,17 @@ async function createAssignment() {
   const email = ($('assign-email')?.value || '').toLowerCase().trim();
   const name  = ($('assign-name')?.value || '').trim();
   const due   = $('assign-due')?.value || '';
+  const time  = $('assign-time')?.value || '10:00';
   const notes = $('assign-notes')?.value.trim() || '';
   if (!email) { toast('Employee email is required', 'error'); $('assign-email')?.focus(); return; }
-  if (!due)   { toast('Due date is required', 'error'); $('assign-due')?.focus(); return; }
+  if (!due)   { toast('Date is required', 'error'); $('assign-due')?.focus(); return; }
+  if (!time)  { toast('Time slot is required', 'error'); $('assign-time')?.focus(); return; }
   try {
-    const res = await api('/api/assignments','POST',{ candidate_email:email, candidate_name:name, due_date:due, notes });
-    const calMsg = res.calendar_event_id ? ' · Calendar event created ✓' : '';
+    const res = await api('/api/assignments','POST',{ candidate_email:email, candidate_name:name, due_date:due, session_time:time, notes });
+    const calMsg = res.calendar_event_id ? ' · Calendar event created' : '';
     toast(`Session assigned to ${email}${calMsg}`, 'success');
     ['assign-email','assign-name','assign-due','assign-notes'].forEach(id => { const e=$(id); if(e) e.value=''; });
+    const timeEl = $('assign-time'); if (timeEl) timeEl.value = '10:00';
     loadManagerDashboard();
   } catch (e) { toast('Could not create: ' + e.message, 'error'); }
 }

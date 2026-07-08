@@ -364,7 +364,10 @@
                 <label class="form-label">Employee Name (optional)</label>
                 <input class="form-input" id="assign-name" placeholder="Name (auto-filled if they're already a member)"/>
               </div>
-              <div class="form-group"><label class="form-label">Due Date <span style="color:var(--red)">*</span></label><input class="form-input" id="assign-due" type="date" required/></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Date <span style="color:var(--red)">*</span></label><input class="form-input" id="assign-due" type="date" required/></div>
+                <div class="form-group"><label class="form-label">Time Slot <span style="color:var(--red)">*</span></label><input class="form-input" id="assign-time" type="time" required value="10:00"/></div>
+              </div>
               <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="assign-notes" placeholder="Focus areas or instructions…"></textarea></div>
               <button class="btn-submit green-btn" onclick="createAssignment()">Assign Employee</button>
             </div>
@@ -455,10 +458,8 @@
               <div class="access-rule"><strong>Due dates</strong> are mandatory. After the due date passes, the candidate cannot submit further reports unless the manager extends the deadline.</div>
               <div class="access-rule"><strong>Roles</strong> are set when the account is created and can be changed at any time by a manager.</div>
             </div>
-                </div>
-              </div>
-              <button class="btn-submit" onclick="addMember()">Add Member</button>
-            </div>
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -506,7 +507,7 @@
     const p = new URLSearchParams(window.location.search);
     const t = p.get('token');
     if (t) {
-      localStorage.setItem('token', t);
+      localStorage.setItem('pa_token', t);
       window.history.replaceState({}, document.title, '/app');
     }
   })();

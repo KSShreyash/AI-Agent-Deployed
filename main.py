@@ -76,28 +76,40 @@ async def _push_calendar_event(
     assignment: dict,
 ) -> Optional[str]:
     """
-    Create a Google Calendar event for the assignment due date.
+    Create a Google Calendar event for the assignment session date + time.
     Returns the Calendar event ID, or None on failure.
     Updates the user's access token in DB if refreshed.
     """
-    due_date = assignment.get("due_date", "")
+    due_date     = assignment.get("due_date", "")
+    session_time = assignment.get("session_time", "10:00") or "10:00"
     if not due_date or not access_token:
         return None
+
+    # Build start/end datetimes from date + time slot
+    try:
+        h, m   = [int(x) for x in session_time.split(":")]
+        end_h  = h + 1 if h < 23 else 23
+        end_m  = m
+        start_dt = f"{due_date}T{h:02d}:{m:02d}:00"
+        end_dt   = f"{due_date}T{end_h:02d}:{end_m:02d}:00"
+    except Exception:
+        start_dt = f"{due_date}T10:00:00"
+        end_dt   = f"{due_date}T11:00:00"
 
     event_body = {
         "summary": "Process Improvement Session — Yolex Labs",
         "description": (
             f"You have been assigned a process improvement session.\n\n"
-            f"Please complete your session before {due_date}.\n\n"
+            f"Session scheduled: {due_date} at {session_time}\n\n"
             + (f"Notes from your manager: {assignment['notes']}" if assignment.get("notes") else "")
         ),
         "start": {
-            "dateTime": f"{due_date}T10:00:00",
-            "timeZone": "UTC",
+            "dateTime": start_dt,
+            "timeZone": "Asia/Kolkata",
         },
         "end": {
-            "dateTime": f"{due_date}T11:00:00",
-            "timeZone": "UTC",
+            "dateTime": end_dt,
+            "timeZone": "Asia/Kolkata",
         },
         "reminders": {
             "useDefault": False,
@@ -708,6 +720,7 @@ class AssignmentCreate(BaseModel):
     candidate_email: str          # required — used for pre-assignment matching
     candidate_name:  str = ""     # optional hint if user doesn't exist yet
     due_date:        str          # required
+    session_time:    str = "10:00" # HH:MM time slot for the calendar event
     notes:           str = ""
 
 
@@ -773,6 +786,7 @@ async def create_assignment(
         "candidate_name":  candidate_name,
         "notes":           req.notes,
         "due_date":        req.due_date,
+        "session_time":    req.session_time or "10:00",
         "status":          "pending",
         "report_id":       None,
         "calendar_event_id": None,
