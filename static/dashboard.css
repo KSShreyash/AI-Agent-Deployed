@@ -1,0 +1,228 @@
+/* ============================================================
+   dashboard.css — Employee personal dashboard
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:    #76b900;
+  --green-dk: #5a8c00;
+  --blue:     #60a5fa;
+  --purple:   #a78bfa;
+  --red:      #f87171;
+  --amber:    #fbbf24;
+  --bg:       #0a0a0f;
+  --bg-2:     #0f0f17;
+  --bg-card:  #13131e;
+  --border:   rgba(255,255,255,.08);
+  --border-h: rgba(118,185,0,.25);
+  --text:     #f0f0f5;
+  --text-2:   #b0b0c0;
+  --text-3:   #6a6a80;
+  --radius:   14px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ── Loading overlay ── */
+#loading-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+.ld-spin {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(118,185,0,.15);
+  border-top-color: var(--green);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ld-text { font-size: 14px; color: var(--text-3); }
+
+/* ── Toasts ── */
+#toasts { position: fixed; top: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  max-width: 300px; animation: slideIn .3s ease;
+}
+.toast.success { background: rgba(118,185,0,.15); border: 1px solid rgba(118,185,0,.3); color: var(--green); }
+.toast.error   { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); color: var(--red); }
+.toast.info    { background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.3); color: var(--blue); }
+@keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
+
+/* ── Topbar ── */
+.db-topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,15,.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.db-topbar-inner {
+  max-width: 960px; margin: 0 auto;
+  display: flex; align-items: center; gap: 16px;
+  height: 60px;
+}
+.db-brand { display: flex; align-items: center; gap: 10px; }
+.db-brand-mark {
+  width: 32px; height: 32px; border-radius: 7px;
+  background: linear-gradient(135deg, var(--green), var(--green-dk));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #000;
+}
+.db-brand-name { font-size: 14px; font-weight: 700; }
+
+.db-topbar-right { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.db-user { display: flex; align-items: center; gap: 10px; }
+.db-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border-h);
+}
+.db-avatar-fallback {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--green);
+  display: none;
+}
+.db-user-name  { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.db-user-role  { font-size: 11px; color: var(--text-3); }
+
+.db-signout-btn {
+  padding: 6px 14px; border-radius: 7px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-3); font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.db-signout-btn:hover { border-color: var(--border-h); color: var(--text); }
+
+/* ── Main ── */
+.db-main { padding: 40px 24px 80px; }
+.db-inner { max-width: 960px; margin: 0 auto; }
+
+/* ── Greeting ── */
+.db-greeting { margin-bottom: 32px; }
+.db-greeting-title { font-size: 28px; font-weight: 800; letter-spacing: -.6px; margin-bottom: 6px; }
+.db-greeting-sub   { font-size: 14px; color: var(--text-2); }
+
+/* ── Stats ── */
+.db-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-bottom: 40px;
+}
+.db-stat-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 24px;
+}
+.db-stat-value { font-size: 30px; font-weight: 800; letter-spacing: -1px; color: var(--green); }
+.db-stat-label { font-size: 12px; color: var(--text-3); margin-top: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Section ── */
+.db-section { margin-bottom: 48px; }
+.db-section-header { margin-bottom: 20px; }
+.db-section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 700;
+  color: var(--text-2);
+}
+
+/* ── Session cards ── */
+.db-cards { display: flex; flex-direction: column; gap: 14px; }
+
+.session-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 22px 24px;
+  transition: border-color .2s, box-shadow .2s;
+  animation: fadeUp .4s ease both;
+}
+.session-card:hover { border-color: var(--border-h); box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+@keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+
+.session-card-top {
+  display: flex; align-items: flex-start; gap: 16px;
+  margin-bottom: 14px;
+}
+.session-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.session-icon.pending   { background: rgba(118,185,0,.12); color: var(--green); }
+.session-icon.overdue   { background: rgba(248,113,113,.12); color: var(--red); }
+.session-icon.completed { background: rgba(96,165,250,.12); color: var(--blue); }
+
+.session-meta { flex: 1; min-width: 0; }
+.session-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.session-title { font-size: 15px; font-weight: 700; }
+
+.status-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  border-radius: 4px; padding: 2px 8px;
+}
+.status-badge.pending   { background: rgba(118,185,0,.12); color: var(--green); }
+.status-badge.overdue   { background: rgba(248,113,113,.12); color: var(--red); }
+.status-badge.in_progress { background: rgba(251,191,36,.12); color: var(--amber); }
+.status-badge.completed { background: rgba(96,165,250,.12); color: var(--blue); }
+
+.session-date { font-size: 13px; color: var(--text-3); }
+
+.session-notes {
+  font-size: 13px; color: var(--text-2); padding: 10px 14px;
+  background: rgba(255,255,255,.03); border-radius: 8px;
+  border-left: 3px solid rgba(118,185,0,.3);
+  margin-bottom: 14px;
+}
+
+.session-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn-start-session {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border-radius: 9px;
+  background: var(--green); color: #000;
+  font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: background .2s, transform .15s;
+}
+.btn-start-session:hover { background: #8dd400; transform: translateY(-1px); }
+.btn-start-session:disabled,
+.btn-start-session.expired {
+  background: rgba(255,255,255,.06); color: var(--text-3);
+  cursor: not-allowed; transform: none;
+}
+
+.btn-cal-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent; color: var(--text-3);
+  font-size: 12px; font-weight: 500; cursor: default;
+}
+.cal-synced   { border-color: rgba(118,185,0,.3); color: var(--green); }
+.cal-unsynced { border-color: var(--border); color: var(--text-3); }
+
+/* ── Empty state ── */
+.db-empty {
+  min-height: 60vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+.db-empty-icon { color: var(--text-3); margin-bottom: 8px; }
+.db-empty-title { font-size: 18px; font-weight: 700; }
+.db-empty-sub   { font-size: 14px; color: var(--text-3); max-width: 360px; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .db-stats { grid-template-columns: 1fr 1fr; }
+  .session-card-top { flex-wrap: wrap; }
+}

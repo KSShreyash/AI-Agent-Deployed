@@ -1,0 +1,55 @@
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────
+venv/
+env/
+.venv/
+.env_local/
+
+# ── Environment / secrets ─────────────────────────────────────
+# NEVER commit .env — it contains API keys and secrets
+.env
+.env.mongo
+# .env.example is safe to commit (no real secrets)
+
+# ── Database files ────────────────────────────────────────────
+# MongoDB data directory (if using local mongod)
+data/db/
+data/*.json
+data/*.jsonl
+data/id_counter.txt
+data/counter.*
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+logs/
+*.log.*
+
+# ── IDE / OS ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
+.directory
+
+# ── Google OAuth credentials ──────────────────────────────────
+client_secret.json
+credentials.json
+token.json
+
+# ── Misc ──────────────────────────────────────────────────────
+*.bak
+*.tmp
+*.swp
+~$*

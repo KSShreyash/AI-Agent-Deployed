@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Process Flow Visualizer</title>
+
+  <script>
+  ;(function () {
+    var _orig = window.matchMedia.bind(window)
+    window.matchMedia = function (q) {
+      if (q === '(pointer: coarse)') {
+        return {
+          matches: false, media: q, onchange: null,
+          addEventListener: function(){}, removeEventListener: function(){},
+          addListener: function(){}, removeListener: function(){},
+          dispatchEvent: function(){ return true },
+        }
+      }
+      return _orig(q)
+    }
+  })()
+  </script>
+
+  <link rel="stylesheet" href="https://unpkg.com/@tldraw/tldraw/tldraw.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { width: 100%; height: 100%; overflow: hidden; background: #f8f9fa; }
+
+    /* tldraw canvas background */
+    .tl-background { background: #f8f9fa !important; }
+
+    /* Remove "Build with tldraw SDK" link */
+    .tl-watermark_SEE_LICENSE,
+    .tlui-watermark,
+    a[href*="tldraw.com/r"] { display: none !important; }
+
+    /* ── Force Hide Tldraw Default Toolbars ──────────── */
+    .tlui-layout__top__left,      /* Hides Main Menu and Page Menu */
+    .tlui-layout__left,           /* Hides Quick Actions (Undo/Redo on left) */
+    .tlui-layout__bottom__main,   /* Hides Default Bottom Toolbar */
+    .tlui-toolbar__toggle         /* Hides mobile toggle chevron */
+    { display: none !important; }
+
+    /* Give the navigation panel (bottom-left zoom) a nicer look */
+    .tlui-navigation-panel {
+      box-shadow: 0 4px 16px rgba(0,0,0,.10) !important;
+      border-radius: 10px !important;
+    }
+
+    /* Style panel nicer shadow (top-right, appears when shape selected) */
+    .tlui-style-panel {
+      border-radius: 12px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.08) !important;
+    }
+
+    /* ── Custom Toolbar styles ───────────────────────── */
+    #pf-toolbar {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 6px 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.08);
+      z-index: 9999;
+      user-select: none;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    #pf-toolbar button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 11px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: #374151;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 600;
+      min-width: 52px;
+      letter-spacing: .02em;
+      transition: background .12s, color .12s;
+      line-height: 1;
+    }
+    #pf-toolbar button:hover {
+      background: #f3f4f6;
+    }
+    #pf-toolbar button.active {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+    #pf-toolbar button svg {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+    #pf-toolbar .sep {
+      width: 1px;
+      height: 36px;
+      background: #e5e7eb;
+      margin: 0 5px;
+      flex-shrink: 0;
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "react":             "https://esm.sh/react@18.2.0",
+      "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+      "react-dom":         "https://esm.sh/react-dom@18.2.0",
+      "react-dom/client":  "https://esm.sh/react-dom@18.2.0/client"
+    }
+  }
+  </script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="module">
+import React, { useRef, useEffect, useState } from 'react'
+import { createRoot }                           from 'react-dom/client'
+import { Tldraw, createShapeId }                from 'https://esm.sh/@tldraw/tldraw@2.4.4?deps=react@18.2.0,react-dom@18.2.0'
+
+/* ════════════════════════════════════════════════════════
+   SHAPE IDs
+════════════════════════════════════════════════════════ */
+const SID = {
+  title:       createShapeId('pf-title'),
+  process:     createShapeId('pf-process'),
+  problem:     createShapeId('pf-problem'),
+  rootcause:   createShapeId('pf-rootcause'),
+  solution:    createShapeId('pf-solution'),
+  impact:      createShapeId('pf-impact'),
+  stakeholder: createShapeId('pf-stkhldr'),
+  frequency:   createShapeId('pf-freq'),
+  severity:    createShapeId('pf-sev'),
+  confidence:  createShapeId('pf-conf'),
+  a1:  createShapeId('pf-a1'),
+  a2:  createShapeId('pf-a2'),
+  a3:  createShapeId('pf-a3'),
+  a4:  createShapeId('pf-a4'),
+  am1: createShapeId('pf-am1'),
+  am2: createShapeId('pf-am2'),
+  am3: createShapeId('pf-am3'),
+  am4: createShapeId('pf-am4'),
+}
+
+/* ════════════════════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════════════════════ */
+const CX = 390, NW = 480, NL = CX - NW / 2
+const F = {
+  title:       { x: 30,  y: 30,  w: 720, h: 65  },
+  process:     { x: NL,  y: 130, w: NW,  h: 100 },
+  problem:     { x: NL,  y: 280, w: NW,  h: 145 },
+  rootcause:   { x: NL,  y: 475, w: NW,  h: 145 },
+  solution:    { x: NL,  y: 670, w: NW,  h: 185 },
+  impact:      { x: NL,  y: 905, w: NW,  h: 120 },
+  stakeholder: { x: 30,  y: 1090, w: 235, h: 115 },
+  frequency:   { x: 275, y: 1090, w: 155, h: 115 },
+  severity:    { x: 440, y: 1090, w: 155, h: 115 },
+  confidence:  { x: 605, y: 1090, w: 160, h: 115 },
+}
+const tc = f => ({ x: f.x + f.w / 2, y: f.y })
+const bc = f => ({ x: f.x + f.w / 2, y: f.y + f.h })
+
+/* ════════════════════════════════════════════════════════
+   TEXT BUILDERS
+════════════════════════════════════════════════════════ */
+const clamp = (s, n = 200) => {
+  if (!s) return '—'
+  const t = String(s)
+  return t.length > n ? t.slice(0, n) + '…' : t
+}
+function buildText(d, step) {
+  const rcRaw = d.root_cause
+  const rcStr = typeof rcRaw === 'object'
+    ? (rcRaw?.ai_inferred || rcRaw?.user_provided || '')
+    : (rcRaw || '')
+  const sol = d.suggested_solution
+  let solStr = '—'
+  if (sol && step >= 4) {
+    if (typeof sol === 'string') { solStr = clamp(sol) }
+    else {
+      const u = sol.user || sol.user_provided || ''
+      const a = sol.ai   || sol.ai_recommended || ''
+      const parts = []
+      if (u) parts.push(`Employee:\n${clamp(u, 100)}`)
+      if (a) parts.push(`AI Rec:\n${clamp(a, 100)}`)
+      solStr = parts.join('\n\n') || '—'
+    }
+  }
+  const pct = d.confidence != null ? Math.round(Number(d.confidence) * 100) + '%' : '—'
+  return {
+    process:     step < 1 ? 'PROCESS\n\nName   —\nStage  —'
+                          : `PROCESS\n\nName   ${clamp(d.process_name, 50) || '…'}\nStage  ${clamp(d.process_stage, 70) || '…'}`,
+    problem:     step < 2 ? 'PROBLEM\n\n—'              : `PROBLEM\n\n${clamp(d.problem_description) || '…'}`,
+    rootcause:   step < 3 ? 'ROOT CAUSE\n\n—'           : `ROOT CAUSE\n\n${clamp(rcStr) || '…'}`,
+    solution:    step < 4 ? 'PROPOSED SOLUTION\n\n—'    : `PROPOSED SOLUTION\n\n${solStr}`,
+    impact:      step < 5 ? 'EXPECTED IMPACT\n\n—'      : `EXPECTED IMPACT\n\n${clamp(d.expected_impact) || '…'}`,
+    stakeholder: `STAKEHOLDERS\n\n${step >= 6 ? clamp(d.affected_stakeholders, 110) || '—' : '—'}`,
+    frequency:   `FREQUENCY\n\n${step >= 6 ? clamp(d.frequency, 55) || '—' : '—'}`,
+    severity:    `SEVERITY\n${step >= 6 ? String(d.severity || '—').toUpperCase() : '—'}`,
+    confidence:  `CONFIDENCE\n\n${step >= 6 ? pct : '—'}`,
+  }
+}
+
+function nodeStyle(cs, step, dc) {
+  if (step < cs)  return { color: 'grey',    fill: 'none'  }
+  if (step === cs) return { color: dc,        fill: 'solid' }
+  return                  { color: dc,        fill: 'semi'  }
+}
+function arrowColor(n, step) { return step >= n ? 'black' : 'grey' }
+function severityColor(sev, step) {
+  if (step < 6) return 'grey'
+  switch (String(sev || '').toLowerCase()) {
+    case 'critical': return 'red'
+    case 'high':     return 'orange'
+    case 'medium':   return 'yellow'
+    default:         return 'green'
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   SHAPE HELPERS
+════════════════════════════════════════════════════════ */
+function geoShape(id, f, text, color, fill, size='s', align='start', va='start') {
+  return { id, type: 'geo', x: f.x, y: f.y,
+    props: { w: f.w, h: f.h, geo: 'rectangle', color, fill, dash: 'solid',
+             size, font: 'sans', align, verticalAlign: va, text } }
+}
+function arrowShape(id, from, to, color='grey') {
+  return { id, type: 'arrow', x: from.x, y: from.y,
+    props: { start: { x: 0, y: 0 }, end: { x: to.x - from.x, y: to.y - from.y },
+             color, arrowheadEnd: 'arrow', arrowheadStart: 'none', size: 'm', dash: 'solid' } }
+}
+
+/* ════════════════════════════════════════════════════════
+   BINDINGS  (attach arrows to shape edges)
+════════════════════════════════════════════════════════ */
+const _bound = new Set()
+function bind(editor, arrowId, targetId, terminal, anchor) {
+  const key = `${arrowId}:${terminal}`
+  if (_bound.has(key)) return
+  try {
+    editor.createBinding({ type: 'arrow', fromId: arrowId, toId: targetId,
+      props: { terminal, normalizedAnchor: anchor, isPrecise: false, isExact: false } })
+    _bound.add(key)
+  } catch {}
+}
+function applyBindings(editor) {
+  const B = [
+    [SID.a1,  SID.process,   {x:.5,y:1}, SID.problem,     {x:.5,y:0}],
+    [SID.a2,  SID.problem,   {x:.5,y:1}, SID.rootcause,   {x:.5,y:0}],
+    [SID.a3,  SID.rootcause, {x:.5,y:1}, SID.solution,    {x:.5,y:0}],
+    [SID.a4,  SID.solution,  {x:.5,y:1}, SID.impact,      {x:.5,y:0}],
+    [SID.am1, SID.impact,    {x:.5,y:1}, SID.stakeholder, {x:.5,y:0}],
+    [SID.am2, SID.impact,    {x:.5,y:1}, SID.frequency,   {x:.5,y:0}],
+    [SID.am3, SID.impact,    {x:.5,y:1}, SID.severity,    {x:.5,y:0}],
+    [SID.am4, SID.impact,    {x:.5,y:1}, SID.confidence,  {x:.5,y:0}],
+  ]
+  B.forEach(([aid, fid, fa, tid, ta]) => {
+    bind(editor, aid, fid, 'start', fa)
+    bind(editor, aid, tid, 'end',   ta)
+  })
+}
+
+/* ════════════════════════════════════════════════════════
+   APPLY SHAPES
+════════════════════════════════════════════════════════ */
+function applyShapes(editor, shapes) {
+  const toCreate = [], toUpdate = []
+  shapes.forEach(s => {
+    try {
+      if (editor.getShape(s.id)) toUpdate.push({ id: s.id, type: s.type, props: { ...s.props } })
+      else toCreate.push(s)
+    } catch { toCreate.push(s) }
+  })
+  if (toCreate.length) editor.createShapes(toCreate)
+  if (toUpdate.length) editor.updateShapes(toUpdate)
+}
+
+/* ════════════════════════════════════════════════════════
+   MAIN FLOWCHART BUILD
+════════════════════════════════════════════════════════ */
+function buildFlowchart(editor, d, step) {
+  const T = buildText(d, step)
+  const ns = (cs, dc) => Object.values(nodeStyle(cs, step, dc))
+  const ac = n => arrowColor(n, step)
+  applyShapes(editor, [
+    geoShape(SID.title,       F.title,       'PROCESS IMPROVEMENT ANALYSIS', 'green',  'solid', 'l', 'middle', 'middle'),
+    geoShape(SID.process,     F.process,     T.process,     ...ns(1,'green')),
+    geoShape(SID.problem,     F.problem,     T.problem,     ...ns(2,'red')),
+    geoShape(SID.rootcause,   F.rootcause,   T.rootcause,   ...ns(3,'orange')),
+    geoShape(SID.solution,    F.solution,    T.solution,    ...ns(4,'blue')),
+    geoShape(SID.impact,      F.impact,      T.impact,      ...ns(5,'violet')),
+    geoShape(SID.stakeholder, F.stakeholder, T.stakeholder, ...ns(6,'blue')),
+    geoShape(SID.frequency,   F.frequency,   T.frequency,   ...ns(6,'light-blue')),
+    geoShape(SID.severity,    F.severity,    T.severity,
+      severityColor(d.severity, step),
+      step >= 6 ? 'solid' : 'none', 'l', 'middle', 'middle'),
+    geoShape(SID.confidence,  F.confidence,  T.confidence,  ...ns(6,'green')),
+    arrowShape(SID.a1,  bc(F.process),   tc(F.problem),   ac(2)),
+    arrowShape(SID.a2,  bc(F.problem),   tc(F.rootcause), ac(3)),
+    arrowShape(SID.a3,  bc(F.rootcause), tc(F.solution),  ac(4)),
+    arrowShape(SID.a4,  bc(F.solution),  tc(F.impact),    ac(5)),
+    arrowShape(SID.am1, bc(F.impact), tc(F.stakeholder), ac(6)),
+    arrowShape(SID.am2, bc(F.impact), tc(F.frequency),   ac(6)),
+    arrowShape(SID.am3, bc(F.impact), tc(F.severity),    ac(6)),
+    arrowShape(SID.am4, bc(F.impact), tc(F.confidence),  ac(6)),
+  ])
+  setTimeout(() => applyBindings(editor), 120)
+}
+
+/* ════════════════════════════════════════════════════════
+   CUSTOM BOTTOM TOOLBAR
+   Replaces tldraw's broken mobile toolbar with a clean,
+   labelled, horizontal toolbar at the bottom center.
+════════════════════════════════════════════════════════ */
+// Tiny helper: make an SVG element from raw path string
+function mkSvg(pathHtml) {
+  return React.createElement('svg', {
+    viewBox: '0 0 24 24', width: 20, height: 20,
+    fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+    strokeLinecap: 'round', strokeLinejoin: 'round',
+    dangerouslySetInnerHTML: { __html: pathHtml }
+  })
+}
+
+const TOOLS = [
+  { id: 'select', label: 'Select',
+    path: '<path d="m4 4 5 16 3-7 7-3z"/>' },
+  { id: 'hand',   label: 'Pan',
+    path: '<path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8l3 5.5a4 4 0 0 0 7 0V14a2 2 0 0 0-4 0z"/>' },
+  { id: 'draw',   label: 'Draw',
+    path: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>' },
+  { id: 'arrow',  label: 'Arrow',
+    path: '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>' },
+  { id: 'text',   label: 'Text',
+    path: '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>' },
+  { id: 'eraser', label: 'Erase',
+    path: '<path d="M20 20H7L3 16 17 2l5 5-2 2"/><path d="M6 11l7 7"/>' },
+]
+
+function CustomToolbar({ editorRef }) {
+  const [activeTool, setActiveTool] = useState('select')
+
+  function useTool(id) {
+    setActiveTool(id)
+    try { editorRef.current?.setCurrentTool(id) } catch {}
+  }
+  function undo()  { try { editorRef.current?.undo() } catch {} }
+  function redo()  { try { editorRef.current?.redo() } catch {} }
+  function fitAll() {
+    const ed = editorRef.current
+    if (!ed) return
+    try { ed.selectAll(); ed.zoomToSelection({ animation: { duration: 400 } }); ed.selectNone() }
+    catch { try { ed.zoomToFit({ animation: { duration: 400 } }) } catch {} }
+  }
+
+  const sep = React.createElement('div', { key: 'sep', className: 'sep' })
+
+  const mkBtn = (id, label, pathHtml, onClick, active) =>
+    React.createElement('button', {
+      key: id, onClick, title: label,
+      className: active ? 'active' : ''
+    },
+      mkSvg(pathHtml),
+      label
+    )
+
+  // Explicitly passing children as an array to prevent spreading issues
+  return React.createElement('div', { id: 'pf-toolbar' }, [
+    ...TOOLS.map(t => mkBtn(t.id, t.label, t.path, () => useTool(t.id), activeTool === t.id)),
+    sep,
+    mkBtn('undo',    'Undo',
+      '<polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>',
+      undo, false),
+    mkBtn('redo',    'Redo',
+      '<polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>',
+      redo, false),
+    React.createElement('div', { key: 'sep2', className: 'sep' }),
+    mkBtn('fit', 'Fit View',
+      '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>',
+      fitAll, false)
+  ])
+}
+
+/* ════════════════════════════════════════════════════════
+   REACT APP
+════════════════════════════════════════════════════════ */
+function App() {
+  const editorRef = useRef(null)
+
+  useEffect(() => {
+    const onMsg = evt => {
+      const ed = editorRef.current
+      if (!ed) return
+      if (evt.data?.type === 'UPDATE_VIZ') {
+        buildFlowchart(ed, evt.data.data || {}, evt.data.step || 0)
+      }
+      if (evt.data?.type === 'VIZ_FIT') {
+        try { ed.selectAll(); ed.zoomToSelection({ animation: { duration: 400 } }); ed.selectNone() }
+        catch { try { ed.zoomToFit({ animation: { duration: 400 } }) } catch {} }
+      }
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [])
+
+  function onMount(editor) {
+    editorRef.current = editor
+    // Ensure desktop mode (belt-and-suspenders backup to the matchMedia override)
+    try { editor.updateInstanceState({ isCoarsePointer: false }) } catch {}
+    // Ensure light theme
+    try { editor.user.updateUserPreferences({ isDarkMode: false }) } catch {}
+
+    buildFlowchart(editor, {}, 0)
+
+    setTimeout(() => {
+      try {
+        editor.selectAll()
+        editor.zoomToSelection({ animation: { duration: 600 } })
+        editor.selectNone()
+      } catch { try { editor.zoomToFit({ animation: { duration: 600 } }) } catch {} }
+    }, 500)
+
+    try { window.parent.postMessage({ type: 'VIZ_READY' }, '*') } catch {}
+  }
+
+  // Proper fallback for disabling UI components entirely in v2
+  const NullComponent = () => null;
+
+  // Wrap Tldraw in a relative container so our fixed toolbar
+  // is positioned relative to the iframe viewport.
+  return React.createElement('div', { style: { position: 'relative', width: '100%', height: '100%' } },
+    React.createElement(Tldraw, {
+      onMount,
+      autoFocus: false,
+      components: {
+        Toolbar:      NullComponent,
+        SharePanel:   NullComponent,
+        HelpMenu:     NullComponent,
+        MainMenu:     NullComponent,
+        PageMenu:     NullComponent, // Fixed syntax from PagePanel
+        QuickActions: NullComponent, // Ensures the left-hand undo/redo panel is hidden
+        ActionsMenu:  NullComponent,
+        DebugMenu:    NullComponent
+        // We leave StylePanel and NavigationPanel so they continue rendering as desired
+      },
+    }),
+    React.createElement(CustomToolbar, { editorRef })
+  )
+}
+
+createRoot(document.getElementById('root')).render(React.createElement(App))
+</script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Process Improvement Agent — Yolex Labs</title>
+  <meta name="description" content="AI-powered Organizational Process Improvement Platform — Manager & Candidate Portal"/>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js" defer></script>
+</head>
+<body>
+
+<div id="particles-js"></div>
+<div id="loading"><div class="spin"></div><span class="loading-text">Initializing…</span></div>
+<div id="toasts"></div>
+
+<!-- ════════════════════════════════════════
+     VIEW: LOGIN
+════════════════════════════════════════ -->
+<div id="view-login" class="view">
+  <div class="login-wrap">
+    <!-- Left brand panel -->
+    <div class="login-brand">
+      <div class="login-brand-inner">
+        <div class="login-logo">
+          <span class="login-logo-text">PA</span>
+        </div>
+        <h1 class="login-brand-title">Process Improvement Agent</h1>
+        <p class="login-brand-sub">AI-powered organizational process improvement platform. Report, analyze, and resolve workflow inefficiencies.</p>
+        <div class="login-brand-features">
+          <div class="login-feature">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Voice-enabled AI interview
+          </div>
+          <div class="login-feature">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Structured process reports
+          </div>
+          <div class="login-feature">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Manager dashboard & analytics
+          </div>
+          <div class="login-feature">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Role-based access control
+          </div>
+        </div>
+      </div>
+      <div class="login-brand-footer">© 2026 Yolex Labs</div>
+    </div>
+
+    <!-- Right login card -->
+    <div class="login-card">
+      <div class="login-card-inner">
+        <div class="login-card-header">
+          <h2 class="login-card-title">Sign in</h2>
+          <p class="login-card-sub">Enter your credentials to access the platform</p>
+        </div>
+
+        <!-- Error banner -->
+        <div class="login-error" id="login-error" style="display:none"></div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" id="login-email" type="email" placeholder="you@company.com" autocomplete="email"/>
+        </div>
+        <div class="form-group" style="margin-bottom:22px;">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap">
+            <input class="form-input" id="login-password" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+            <button class="pw-toggle" type="button" onclick="togglePwVisibility('login-password',this)" tabindex="-1">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-login" id="btn-login" onclick="doLogin()">Sign In</button>
+
+        <div class="login-divider"><span>or</span></div>
+
+        <a href="/api/auth/google/login" class="btn-google-oauth" id="btn-google-login">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </a>
+
+        <div class="login-divider"><span>New to the platform?</span></div>
+        <button class="btn-register-link" onclick="showView('register')">Create the first Manager account →</button>
+
+        <div class="login-help">
+          <p>Employees — sign in with Google above to access your sessions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     VIEW: REGISTER (first manager only)
+════════════════════════════════════════ -->
+<div id="view-register" class="view">
+  <div class="reg-card-wrap">
+    <div class="reg-card">
+      <div class="reg-logo"><span class="login-logo-text">PA</span></div>
+      <h2 class="reg-title">Create Manager Account</h2>
+      <p class="reg-sub">This page is only available when no managers exist in the system.</p>
+
+      <div class="login-error" id="reg-error" style="display:none"></div>
+
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="reg-name" placeholder="Your full name"/></div>
+        <div class="form-group"><label class="form-label">Department</label><input class="form-input" id="reg-dept" placeholder="e.g. Engineering"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" id="reg-email" type="email" placeholder="you@company.com"/></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="pw-wrap"><input class="form-input" id="reg-password" type="password" placeholder="Min 8 characters"/><button class="pw-toggle" type="button" onclick="togglePwVisibility('reg-password',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        </div>
+        <div class="form-group"><label class="form-label">Job Title</label><input class="form-input" id="reg-jobrole" placeholder="e.g. HR Manager"/></div>
+      </div>
+      <button class="btn-login" onclick="doRegister()">Create Manager Account</button>
+      <span class="btn-back-link" onclick="showView('login')">← Back to Sign In</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     VIEW: CONSENT
+════════════════════════════════════════ -->
+<div id="view-consent" class="view">
+  <div class="consent-card">
+    <div class="consent-shield">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+    </div>
+    <h2 class="consent-title">Session Privacy Notice</h2>
+    <p class="consent-intro">Your session will be recorded for process improvement analysis and organizational review.</p>
+    <div class="consent-points">
+      <p class="consent-point"><strong>What we record:</strong> your voice, chat messages, and session responses during this evaluation.</p>
+      <p class="consent-point"><strong>Retention:</strong> session data is retained for <strong>30 days</strong> and then permanently deleted.</p>
+      <p class="consent-point"><strong>Access:</strong> only authorized managers and reviewers may access this session's data to evaluate organizational processes.</p>
+      <p class="consent-point"><strong>Purpose:</strong> data is used exclusively for process improvement — not for individual performance evaluation.</p>
+    </div>
+    <p class="consent-type-label">Type <strong>I consent</strong> to continue:</p>
+    <input class="consent-input" id="consent-input" type="text" placeholder="I consent" autocomplete="off" oninput="checkConsent(this)"/>
+    <button class="btn-consent" id="consent-btn" disabled onclick="beginSession()">I Consent — Begin Session</button>
+    <span class="consent-cancel" onclick="authLogout()">Sign out</span>
+    <div class="consent-footer">
+      © 2026 Yolex Labs &nbsp;·&nbsp;
+      <a href="#">Privacy Policy</a> &nbsp;·&nbsp; support@yolexlabs.com
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     VIEW: INTERVIEW (Split-screen)
+════════════════════════════════════════ -->
+<div id="view-interview" class="view" style="flex-direction:column;">
+  <div class="iv-topbar">
+    <div class="iv-topbar-brand">
+      <div class="iv-brand-mark">PA</div>
+      <span class="iv-brand-label">Process Improvement Agent</span>
+      <span class="iv-candidate-name" id="iv-candidate-label"></span>
+    </div>
+    <div class="iv-sep"></div>
+    <div class="iv-status-pill">
+      <div class="iv-status-dot"></div>
+      <span id="iv-timer">00:00</span>
+    </div>
+    <button class="iv-viz-btn" id="iv-viz-btn" onclick="toggleVisualizer()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="3" width="9" height="8" rx="1"/>
+        <rect x="13" y="3" width="9" height="8" rx="1"/>
+        <rect x="2" y="13" width="9" height="8" rx="1"/>
+        <path d="M13 17h2m2 0h2M18 15v2m0 2v2" stroke-linecap="round"/>
+      </svg>
+      Visualize
+    </button>
+    <button class="iv-end-btn" onclick="endSession()">End Session</button>
+  </div>
+
+  <div class="iv-body">
+    <div class="iv-left">
+      <div class="ai-orb-wrap" id="ai-orb-wrap">
+        <div class="ai-orb" id="ai-orb"></div>
+        <div class="ai-orb-ring r1"></div>
+        <div class="ai-orb-ring r2"></div>
+        <div class="ai-orb-ring r3"></div>
+      </div>
+      <div class="iv-agent-name">Process Agent</div>
+      <div class="iv-agent-status">
+        <span class="iv-status-blink"></span>
+        <span id="iv-agent-status-text">Ready</span>
+      </div>
+      <div class="iv-controls">
+        <div style="text-align:center;">
+          <button class="ctrl-btn" id="ctrl-mic" title="Toggle microphone" onclick="toggleVoice()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="ctrl-label" id="ctrl-mic-label">Mic</div>
+        </div>
+        <div style="text-align:center;">
+          <button class="ctrl-btn" id="ctrl-speaker" title="Toggle speaker" onclick="toggleSpeaker()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </button>
+          <div class="ctrl-label" id="ctrl-speaker-label">Speaker</div>
+        </div>
+      </div>
+      <div class="iv-left-footer" id="iv-rec-indicator"></div>
+    </div>
+
+    <div class="iv-right">
+      <div class="iv-topic-bar" id="iv-topic-bar">
+        <div class="iv-topic-label">Session Topic</div>
+        <div class="iv-topic-text" id="iv-topic-text">Open interview — describe any process issue</div>
+      </div>
+      <div class="iv-messages" id="iv-messages"></div>
+      <div class="iv-input-area">
+        <div class="iv-voice-bar" id="iv-voice-bar">
+          <div class="iv-voice-dot"></div>
+          <span class="iv-voice-txt" id="iv-voice-txt">Ready</span>
+          <button class="iv-stop-btn" onclick="voiceStop()">Stop</button>
+        </div>
+        <div class="iv-live-transcript" id="iv-live-transcript">
+          <div class="lt-lbl rec" id="iv-lt-label">LISTENING</div>
+          <div class="lt-txt" id="iv-lt-text"><span class="lt-interim">Start speaking…</span></div>
+        </div>
+        <div class="iv-input-box">
+          <textarea id="iv-chat-input" rows="1" placeholder="Type your response or click the microphone to speak…" aria-label="Message"></textarea>
+          <div class="iv-waveform-wrap" id="iv-waveform-wrap">
+            <canvas id="iv-waveform"></canvas>
+          </div>
+          <div class="iv-input-controls">
+            <button class="iv-btn-mic" id="iv-btn-mic" title="Voice input" onclick="toggleVoice()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              <span class="iv-countdown" id="iv-countdown">3</span>
+            </button>
+            <button class="iv-btn-send" id="iv-btn-send" title="Send" onclick="submitIvText()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="iv-input-hint">Enter to send · Shift+Enter for new line · Click mic to use voice</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     VIEW: MANAGER DASHBOARD
+════════════════════════════════════════ -->
+<div id="view-manager" class="view">
+  <div class="mgr-topbar">
+    <div class="mgr-brand">
+      <div class="mgr-brand-mark">M</div>
+      <span class="mgr-brand-label">Manager Portal</span>
+    </div>
+    <div class="mgr-topbar-sep"></div>
+    <span class="mgr-brand-sub">Process Improvement Platform — Yolex Labs</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+      <span class="mgr-user-pill" id="mgr-user-pill">—</span>
+      <button class="mgr-back-btn" onclick="authLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="mgr-body">
+    <aside class="mgr-sidebar">
+      <nav class="mgr-nav">
+        <div class="mgr-nav-label">Navigation</div>
+        <div class="mgr-nav-item active" data-page="dashboard" onclick="mgrNav('dashboard',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </div>
+        <div class="mgr-nav-item" data-page="reports" onclick="mgrNav('reports',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Reports
+          <span class="mgr-nav-badge" id="nav-reports-badge">0</span>
+        </div>
+        <div class="mgr-nav-item" data-page="assignments" onclick="mgrNav('assignments',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Assignments
+          <span class="mgr-nav-badge" id="nav-assign-badge">0</span>
+        </div>
+        <div class="mgr-nav-item" data-page="members" onclick="mgrNav('members',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Members
+          <span class="mgr-nav-badge" id="nav-members-badge">0</span>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="mgr-content">
+
+      <!-- ── Dashboard ── -->
+      <div class="mgr-page active" id="mgr-page-dashboard">
+        <div class="mgr-page-title">Dashboard</div>
+        <div class="mgr-page-sub">Organizational process improvement overview</div>
+        <div class="stats-grid">
+          <div class="stat-card green"><div class="stat-card-label">Total Reports</div><div class="stat-card-value" id="stat-total">—</div><div class="stat-card-sub">All time</div></div>
+          <div class="stat-card red"><div class="stat-card-label">Critical / High</div><div class="stat-card-value" id="stat-critical">—</div><div class="stat-card-sub">Priority issues</div></div>
+          <div class="stat-card blue"><div class="stat-card-label">Members</div><div class="stat-card-value" id="stat-cands">—</div><div class="stat-card-sub">In platform</div></div>
+          <div class="stat-card amber"><div class="stat-card-label">Completion Rate</div><div class="stat-card-value" id="stat-complete">—</div><div class="stat-card-sub">Assignments done</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+          <div class="mgr-card"><div class="mgr-card-title">Issues by Severity</div><div id="sev-bars"></div></div>
+          <div class="mgr-card"><div class="mgr-card-title">Assignment Pipeline</div><div id="pipeline-bars"></div></div>
+        </div>
+        <div class="mgr-section">
+          <div class="mgr-section-header">
+            <span class="mgr-section-title">Recent Reports</span>
+            <span class="mgr-section-action" onclick="mgrNav('reports',null)">View all →</span>
+          </div>
+          <table class="mgr-table">
+            <thead><tr><th>Process</th><th>Stage</th><th>Severity</th><th>Priority</th><th>Submitted by</th><th>Date</th></tr></thead>
+            <tbody id="recent-reports-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Reports ── -->
+      <div class="mgr-page" id="mgr-page-reports">
+        <div class="mgr-page-title">Process Reports</div>
+        <div class="mgr-page-sub">All improvement reports submitted by candidates and employees</div>
+        <table class="mgr-table">
+          <thead><tr><th>ID</th><th>Process</th><th>Stage</th><th>Severity</th><th>Priority</th><th>Submitted by</th><th>Date</th><th></th></tr></thead>
+          <tbody id="all-reports-table"></tbody>
+        </table>
+      </div>
+
+      <!-- ── Assignments ── -->
+      <div class="mgr-page" id="mgr-page-assignments">
+        <div class="mgr-page-title">Assignments</div>
+        <div class="mgr-page-sub">Assign members to process areas for structured evaluation interviews</div>
+        <div class="mgr-panel">
+          <div>
+            <div class="mgr-section">
+              <div class="mgr-section-header"><span class="mgr-section-title">Active Assignments</span></div>
+              <table class="mgr-table">
+                <thead><tr><th>Candidate</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead>
+                <tbody id="assignments-table"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="mgr-card">
+              <div class="mgr-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Create Assignment
+              </div>
+              <div class="form-group">
+                <label class="form-label">Employee Email <span style="color:var(--red)">*</span></label>
+                <input class="form-input" id="assign-email" type="email" placeholder="employee@company.com"/>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Works even if the employee hasn't signed up yet — they'll see the session when they log in.</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Employee Name (optional)</label>
+                <input class="form-input" id="assign-name" placeholder="Name (auto-filled if they're already a member)"/>
+              </div>
+              <div class="form-group"><label class="form-label">Due Date <span style="color:var(--red)">*</span></label><input class="form-input" id="assign-due" type="date" required/></div>
+              <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" id="assign-notes" placeholder="Focus areas or instructions…"></textarea></div>
+              <button class="btn-submit green-btn" onclick="createAssignment()">Assign Employee</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Members ── -->
+      <div class="mgr-page" id="mgr-page-members">
+        <div class="mgr-page-title">Members</div>
+        <div class="mgr-page-sub">Manage who has access to the platform and what they can do</div>
+        <div class="mgr-panel">
+          <div>
+            <div class="mgr-section">
+              <div class="mgr-section-header">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+                  <span class="mgr-section-title">Active members</span>
+                  <span class="mgr-nav-badge" id="members-count-badge" style="font-size:10px">0</span>
+                </div>
+              </div>
+              <table class="mgr-table" id="members-table">
+                <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Actions</th></tr></thead>
+                <tbody id="members-tbody"></tbody>
+              </table>
+            </div>
+
+            <div class="mgr-section" style="margin-top:24px;">
+              <div class="mgr-section-header">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span class="mgr-section-title">Inactive members</span>
+                </div>
+              </div>
+              <table class="mgr-table">
+                <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+                <tbody id="inactive-tbody"></tbody>
+              </table>
+              <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Inactive members cannot log in until re-activated by a manager.</p>
+            </div>
+
+            <div class="mgr-card" style="margin-top:24px;">
+              <div class="mgr-card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Add Member
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="mem-name" placeholder="Member name"/></div>
+                <div class="form-group">
+                  <label class="form-label">Role</label>
+                  <select class="form-select" id="mem-role">
+                    <option value="candidate">Candidate (interview access only)</option>
+                    <option value="manager">Manager (full dashboard access)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" id="mem-email" type="email" placeholder="email@company.com"/></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Department</label><input class="form-input" id="mem-dept" placeholder="Engineering"/></div>
+                <div class="form-group"><label class="form-label">Job Title</label><input class="form-input" id="mem-jobrole" placeholder="Team Lead"/></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Initial Password</label>
+                <div class="pw-wrap">
+                  <input class="form-input" id="mem-password" type="password" placeholder="Set a temporary password"/>
+                  <button class="pw-toggle" type="button" onclick="togglePwVisibility('mem-password',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                </div>
+              </div>
+              <button class="btn-submit" onclick="addMember()">Add Member</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="detail-card" style="margin-bottom:16px;">
+              <div class="mgr-card-title" style="margin-bottom:12px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Details
+              </div>
+              <div class="detail-row"><span class="detail-key">Workspace</span><span class="detail-val">Yolex Labs</span></div>
+              <div class="detail-row"><span class="detail-key">Your role</span><span id="detail-role" class="detail-val"><span class="badge badge-blue">MANAGER</span></span></div>
+              <div class="detail-row"><span class="detail-key">Members</span><span class="detail-val" id="detail-members">—</span></div>
+            </div>
+
+            <div class="mgr-card">
+              <div class="mgr-card-title">How access works</div>
+              <div class="access-rule"><strong>Managers</strong> can view all reports, manage members, create assignments, and access the full dashboard.</div>
+              <div class="access-rule"><strong>Candidates</strong> can log in, complete the consent screen, and conduct voice/chat interviews that generate process reports.</div>
+              <div class="access-rule"><strong>Due dates</strong> are mandatory. After the due date passes, the candidate cannot submit further reports unless the manager extends the deadline.</div>
+              <div class="access-rule"><strong>Roles</strong> are set when the account is created and can be changed at any time by a manager.</div>
+            </div>
+                </div>
+              </div>
+              <button class="btn-submit" onclick="addMember()">Add Member</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     TLDRAW VISUALIZER OVERLAY
+════════════════════════════════════════ -->
+<div id="viz-overlay" class="viz-overlay">
+  <div class="viz-hdr">
+    <div class="viz-hdr-left">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#76b900" stroke-width="2">
+        <rect x="2" y="3" width="9" height="8" rx="1"/><rect x="13" y="3" width="9" height="8" rx="1"/>
+        <rect x="2" y="13" width="9" height="8" rx="1"/><path d="M13 17h2m2 0h2M18 15v2m0 2v2" stroke-linecap="round"/>
+      </svg>
+      <span class="viz-hdr-title">Process Flow Visualizer</span>
+      <span class="viz-hdr-dot">·</span>
+      <span class="viz-hdr-sub">Interactive flowchart — updates live as the interview progresses</span>
+    </div>
+    <div class="viz-hdr-right">
+      <button class="viz-hdr-hint" onclick="vizFitView()"
+        title="Fit all shapes into view">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>
+        </svg>
+        Fit View
+      </button>
+      <button class="viz-hdr-close" onclick="toggleVisualizer()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Close
+      </button>
+    </div>
+  </div>
+  <iframe id="viz-frame" class="viz-frame" frameborder="0" allow="clipboard-write"></iframe>
+</div>
+
+<script>
+  // If redirected from Google OAuth with ?token=... save it and continue to app
+  (function(){
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get('token');
+    if (t) {
+      localStorage.setItem('token', t);
+      window.history.replaceState({}, document.title, '/app');
+    }
+  })();
+</script>
+<script src="/static/app.js"></script>
+</body>
+</html>

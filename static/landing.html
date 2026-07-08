@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Process Improvement Agent — Yolex Labs</title>
+  <meta name="description" content="AI-powered workplace diagnostic agent. Find where work breaks down before you build anything to fix it."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/landing.css"/>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="nav-logo-mark">PA</div>
+      <span class="nav-logo-text">Process Agent</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">How it works</a>
+    </div>
+    <div class="nav-cta">
+      <a href="/api/auth/google/login" class="btn-nav-signin">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Sign In
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero" id="hero">
+  <div class="hero-glow glow-1"></div>
+  <div class="hero-glow glow-2"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      AI-Powered · Conversational · Private
+    </div>
+    <h1 class="hero-title">
+      Diagnose. Understand.<br>
+      <span class="hero-gradient">Improve.</span>
+    </h1>
+    <p class="hero-sub">
+      A diagnostic agent that talks to your employees, finds where work actually breaks down,
+      and hands every department a clear, evidence-based picture of its real issues.
+    </p>
+    <div class="hero-actions">
+      <a href="/api/auth/google/login" class="btn-google-hero" id="btn-hero-google">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </a>
+      <a href="/app" class="btn-admin-link">Admin / Manager login →</a>
+    </div>
+    <p class="hero-privacy">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Secure Google sign-in · No passwords stored · GDPR-aligned
+    </p>
+  </div>
+
+  <!-- Floating preview card -->
+  <div class="hero-card-wrap">
+    <div class="hero-preview-card">
+      <div class="preview-card-header">
+        <div class="preview-avatar">PA</div>
+        <div>
+          <div class="preview-name">Process Agent</div>
+          <div class="preview-status"><span class="preview-dot"></span>Active session</div>
+        </div>
+      </div>
+      <div class="preview-message agent">
+        "Hey — thanks for taking the time. What's been taking up most of your energy lately?"
+      </div>
+      <div class="preview-message user">
+        "Honestly, the reporting process is a nightmare — takes me 3 hours every Friday."
+      </div>
+      <div class="preview-message agent">
+        "Got it. And is that manual data collection, or more the formatting side of things?"
+      </div>
+      <div class="preview-typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Feature cards ── -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="section-label">What gets captured</div>
+    <h2 class="section-title">Three types of insight, one conversation</h2>
+    <p class="section-sub">The agent automatically classifies what it hears — no forms, no categories to choose from.</p>
+    <div class="feature-cards">
+      <div class="feature-card work">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        </div>
+        <div class="feature-tag work-tag">Work</div>
+        <h3 class="feature-title">Where time actually goes</h3>
+        <p class="feature-desc">Recurring friction, the tools that slow people down, the one process that takes longest. Attributed at the team level.</p>
+        <div class="feature-meta">Team-level · Attributable</div>
+      </div>
+      <div class="feature-card growth">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="feature-tag growth-tag">Growth & Wellbeing</div>
+        <h3 class="feature-title">Where people want to grow</h3>
+        <p class="feature-desc">Upskilling wishes, career concerns, and early signs of burnout — captured gently, reported in aggregate only.</p>
+        <div class="feature-meta">Aggregate only · Always anonymous</div>
+      </div>
+      <div class="feature-card openline">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="feature-tag openline-tag">Open Line</div>
+        <h3 class="feature-title">Anything to leadership</h3>
+        <p class="feature-desc">An always-open, anonymous channel. No scheduling, no extra effort. Anything they want to raise — raised.</p>
+        <div class="feature-meta">Aggregate only · Always anonymous</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ── -->
+<section class="how" id="how-it-works">
+  <div class="how-inner">
+    <div class="section-label">The process</div>
+    <h2 class="section-title">From assignment to insight in four steps</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3 class="step-title">Manager assigns</h3>
+          <p class="step-desc">Enter the employee's email and a due date. No account needed yet — the session is waiting when they sign up.</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3 class="step-title">Calendar event created</h3>
+          <p class="step-desc">The moment the employee connects their Google account, a calendar event appears with reminders — automatically.</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3 class="step-title">25-minute conversation</h3>
+          <p class="step-desc">The agent talks naturally, follows threads, and collects everything needed — no forms, no checklists.</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <h3 class="step-title">Structured report</h3>
+          <p class="step-desc">A detailed, categorised report lands in the manager dashboard — with AI recommendations, friction points, and quick wins.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">Ready to see where work actually breaks down?</h2>
+    <p class="cta-sub">Sign in with your Google account to get started.</p>
+    <a href="/api/auth/google/login" class="btn-google-hero">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </a>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo-mark" style="width:28px;height:28px;font-size:11px;">PA</div>
+      <span style="font-weight:600;font-size:14px;">Process Agent</span>
+    </div>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">support@yolexlabs.com</a>
+    </div>
+    <div class="footer-copy">© 2026 Yolex Labs · All rights reserved</div>
+  </div>
+</footer>
+
+<script>
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    document.querySelector('.nav')?.classList.toggle('nav-scrolled', window.scrollY > 40);
+  });
+
+  // Animate elements on scroll
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.feature-card, .step, .hero-preview-card').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
