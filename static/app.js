@@ -340,7 +340,13 @@ function endSession() {
   if (el.ivMessages) el.ivMessages.innerHTML = '';
   const ci = $('consent-input'); if (ci) ci.value = '';
   const cb = $('consent-btn');   if (cb) cb.disabled = true;
-  routeByRole(AUTH.user?.role || 'candidate');
+
+  // Employees (candidates) always go back to their dashboard
+  if (AUTH.user?.role === 'candidate' || AUTH.user?.role !== 'manager') {
+    window.location.href = '/dashboard';
+  } else {
+    routeByRole(AUTH.user?.role || 'candidate');
+  }
 }
 
 function startTimer() {
@@ -354,6 +360,45 @@ function startTimer() {
 }
 
 function stopTimer() { clearInterval(app.timerInterval); app.timerInterval = null; }
+
+/* Show "Return to Dashboard" after session completion (employees only) */
+function _showReturnToDashboard() {
+  // Inject a return banner at the bottom of the chat
+  const wrap = document.createElement('div');
+  wrap.id = 'return-dashboard-banner';
+  wrap.style.cssText = `
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    padding:24px 16px; margin-top:12px;
+    background:rgba(118,185,0,.07); border:1px solid rgba(118,185,0,.25);
+    border-radius:14px; text-align:center;
+  `;
+  let secs = 8;
+  wrap.innerHTML = `
+    <div style="font-size:13px;color:var(--text-muted);">
+      Your session is complete. You will be returned to your dashboard in
+      <strong id="return-countdown" style="color:var(--green)">${secs}s</strong>.
+    </div>
+    <button onclick="window.location.href='/dashboard'"
+      style="padding:10px 28px;background:var(--green);color:#000;font-weight:700;
+             font-size:13px;border:none;border-radius:8px;cursor:pointer;letter-spacing:.3px;">
+      Return to Dashboard
+    </button>
+  `;
+  el.ivMessages?.appendChild(wrap);
+  el.ivMessages?.scrollTo({ top: el.ivMessages.scrollHeight, behavior: 'smooth' });
+
+  const ticker = setInterval(() => {
+    secs--;
+    const cd = document.getElementById('return-countdown');
+    if (cd) cd.textContent = `${secs}s`;
+    if (secs <= 0) {
+      clearInterval(ticker);
+      window.location.href = '/dashboard';
+    }
+  }, 1000);
+}
+
+
 
 
 /* ============================================================
@@ -393,6 +438,12 @@ async function sendMessage(text, isVoice = false, isAgentInitiated = false) {
       viz.step = 6;
       viz.data = report;
       sendVizUpdate();
+
+      // ── For employees: show return button + auto-redirect ─────
+      if (AUTH.user?.role !== 'manager') {
+        stopTimer();
+        _showReturnToDashboard();
+      }
     } else {
       // ── Visualizer: incremental step ─────────────────────────
       viz.turnCount++;
