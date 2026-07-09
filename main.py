@@ -684,6 +684,24 @@ async def save_report(req: SaveReportRequest, user: dict = Depends(auth.get_curr
         if existing:
             return {"saved": False, "reason": "duplicate", "report_id": rid}
     result = await database.reports.insert_one(report)
+
+    # ── Mark the matching assignment as completed ─────────────────────────────
+    user_email = user.get("email", "")
+    sub        = user.get("sub", "")
+    assign_filter = {
+        "status": {"$in": ["pending", "in_progress"]},
+        "$or": [
+            {"candidate_id":    sub},
+            {"candidate_email": user_email},
+        ],
+    }
+    await database.assignments.update_one(
+        assign_filter,
+        {"$set": {"status": "completed", "report_id": rid, "completed_at": datetime.now(timezone.utc).isoformat()}},
+        sort=[("created_at", -1)],
+    )
+    # ─────────────────────────────────────────────────────────────────────────
+
     return {"saved": True, "report_id": rid, "mongo_id": str(result.inserted_id)}
 
 

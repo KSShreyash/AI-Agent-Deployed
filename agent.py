@@ -145,19 +145,39 @@ class AgentSession:
 
     @staticmethod
     def _extract_report(text: str) -> tuple[Optional[dict], str]:
-        """Pull <REPORT_JSON>…</REPORT_JSON> from the AI reply."""
+        """Pull <REPORT_JSON>…</REPORT_JSON> (or raw JSON blocks) from the AI reply."""
+
+        # ── 1. Preferred: tagged block ────────────────────────────────────────
         match = re.search(r"<REPORT_JSON>(.*?)</REPORT_JSON>", text, re.DOTALL)
+
+        # ── 2. Fallback: ```json ... ``` fenced block ─────────────────────────
+        if not match:
+            match = re.search(r"```(?:json)?\s*([\s\S]*?report_type[\s\S]*?)```", text, re.DOTALL)
+
+        # ── 3. Fallback: bare { ... } object containing "report_type" ─────────
+        if not match:
+            match = re.search(r"(\{[^{}]*\"report_type\"[^{}]*(?:\{[^{}]*\}[^{}]*)*\})", text, re.DOTALL)
+
         if not match:
             return None, text
 
         json_str   = match.group(1).strip()
-        clean_text = text[: match.start()].rstrip() + text[match.end() :].lstrip()
+        clean_text = text[: match.start()].rstrip() + "\n" + text[match.end() :].lstrip()
 
         try:
             report = json.loads(json_str)
         except json.JSONDecodeError:
-            logger.warning("Could not parse embedded JSON report")
-            return None, text
+            # Try to strip any surrounding prose and re-parse
+            inner = re.search(r"\{[\s\S]+\}", json_str)
+            if inner:
+                try:
+                    report = json.loads(inner.group(0))
+                except json.JSONDecodeError:
+                    logger.warning("Could not parse embedded JSON report")
+                    return None, text
+            else:
+                logger.warning("Could not parse embedded JSON report")
+                return None, text
 
         if not report.get("timestamp"):
             report["timestamp"] = datetime.now(timezone.utc).isoformat()
