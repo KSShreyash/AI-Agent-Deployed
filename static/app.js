@@ -144,6 +144,14 @@ async function doLogin() {
 
   try {
     const res = await api('/api/auth/login', 'POST', { email, password }, true /* noAuth */);
+
+    // Block candidates from using this portal
+    if (res.user?.role !== 'manager') {
+      AUTH.clear();
+      showLoginErr('This portal is for managers only. Employees must sign in with Google from the home page.');
+      return;
+    }
+
     AUTH.setToken(res.access_token);
     AUTH.user = res.user;
     if (errEl) errEl.style.display = 'none';
@@ -151,7 +159,7 @@ async function doLogin() {
   } catch (e) {
     showLoginErr(e.message || 'Invalid email or password.');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In as Manager'; }
   }
 }
 
