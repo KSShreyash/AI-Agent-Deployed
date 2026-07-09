@@ -686,7 +686,8 @@ async def save_report(req: SaveReportRequest, user: dict = Depends(auth.get_curr
     result = await database.reports.insert_one(report)
 
     # ── Mark the matching assignment as completed ─────────────────────────────
-    user_email = user.get("email", "")
+    # Motor's update_one does NOT support sort — find the target first, then update by _id.
+    user_email = user.get("email", "").lower().strip()
     sub        = user.get("sub", "")
     assign_filter = {
         "status": {"$in": ["pending", "in_progress"]},
@@ -695,12 +696,21 @@ async def save_report(req: SaveReportRequest, user: dict = Depends(auth.get_curr
             {"candidate_email": user_email},
         ],
     }
-    await database.assignments.update_one(
+    target_assign = await database.assignments.find_one(
         assign_filter,
-        {"$set": {"status": "completed", "report_id": rid, "completed_at": datetime.now(timezone.utc).isoformat()}},
         sort=[("created_at", -1)],
     )
+    if target_assign:
+        await database.assignments.update_one(
+            {"_id": target_assign["_id"]},
+            {"$set": {
+                "status":       "completed",
+                "report_id":    rid,
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
     # ─────────────────────────────────────────────────────────────────────────
+
 
     return {"saved": True, "report_id": rid, "mongo_id": str(result.inserted_id)}
 
@@ -888,11 +898,20 @@ async def delete_assignment(assign_id: str, _: dict = Depends(auth.require_manag
 @app.get("/api/employee/dashboard")
 async def employee_dashboard(user: dict = Depends(auth.get_current_user)):
     """Return structured dashboard data for the logged-in employee."""
-    database = db.get_db()
-    user_id  = user.get("sub", "")
+    database   = db.get_db()
+    user_id    = user.get("sub", "")
+    user_email = user.get("email", "").lower().strip()
 
+    # Query by BOTH candidate_id AND candidate_email so pre-assigned
+    # (before the employee signed up) assignments are always found.
+    query = {
+        "$or": [
+            {"candidate_id":    user_id},
+            {"candidate_email": user_email},
+        ]
+    }
     all_assigns = await database.assignments.find(
-        {"candidate_id": user_id}
+        query
     ).sort("created_at", -1).to_list(100)
 
     today   = datetime.now(timezone.utc).date()
@@ -912,10 +931,13 @@ async def employee_dashboard(user: dict = Depends(auth.get_current_user)):
             upcoming.append(a)
 
     # Fetch user profile for avatar/name
-    user_doc = await database.users.find_one(
-        {"_id": ObjectId(user_id)},
-        {"password_hash": 0, "google_access_token": 0, "google_refresh_token": 0},
-    )
+    try:
+        user_doc = await database.users.find_one(
+            {"_id": ObjectId(user_id)},
+            {"password_hash": 0, "google_access_token": 0, "google_refresh_token": 0},
+        )
+    except Exception:
+        user_doc = None
     profile = _doc(user_doc) if user_doc else {}
 
     return {
